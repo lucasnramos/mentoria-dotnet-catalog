@@ -1,4 +1,6 @@
 using System;
+using System.Text.Json;
+using Catalog.API.Core.Domain.Entities;
 using Catalog.API.Core.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -13,9 +15,28 @@ public class ProductRepository : IProductRepository
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
 
-    public async Task AddAsync()
+    public async Task AddAsync(Product product)
     {
-        await _cache.SetStringAsync("sample_key", "sample_value");
+        var serialized = JsonSerializer.Serialize(product);
+        await _cache.SetStringAsync(product.Id.ToString(), serialized);
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        await _cache.RemoveAsync(id.ToString());
+    }
+
+    public async Task<Product> GetByIdAsync(Guid id)
+    {
+        var serialized = await _cache.GetStringAsync(id.ToString());
+        var product = JsonSerializer.Deserialize<Product>(serialized);
+        return product;
+    }
+
+    public async Task UpdateAsync(Product product)
+    {
+        var serialized = JsonSerializer.Serialize(product);
+        await _cache.SetStringAsync(product.Id.ToString(), serialized);
     }
 }
 
