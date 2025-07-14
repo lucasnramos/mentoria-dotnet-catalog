@@ -2,34 +2,44 @@ using System;
 using Catalog.API.Core.Domain.Entities;
 using Catalog.API.Core.Repositories.Interfaces;
 using Catalog.API.Core.Services.Application.Interfaces;
+using Marraia.Notifications.Interfaces;
 
 namespace Catalog.API.Core.Services.Application;
 
 public class ProductAppService : IProductAppService
 {
     private readonly IProductRepository _productRepository;
-    public ProductAppService(IProductRepository productRepository)
+    private readonly ISmartNotification _notification;
+
+    public ProductAppService(IProductRepository productRepository, ISmartNotification notification)
     {
         _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+        _notification = notification ?? throw new ArgumentNullException(nameof(notification));
     }
 
-    public Task AddProductAsync(Product product)
+    public async Task InsertProductAsync(Product product)
     {
-        throw new NotImplementedException();
+        await _productRepository.AddAsync(product);
     }
 
-    public Task DeleteProductAsync(Guid id)
+    public async Task DeleteProductAsync(Guid id)
     {
-        throw new NotImplementedException();
+        await _productRepository.DeleteAsync(id);
     }
 
-    public Task<Product> GetProductByIdAsync(Guid id)
+    public async Task<Product> GetProductByIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var product = await _productRepository.GetByIdAsync(id);
+        if (product == null)
+        {
+            _notification.NewNotificationError("Product not found.");
+            return null;
+        }
+        return product;
     }
 
-    public Task UpdateProductAsync(Product product)
+    public async Task UpdateProductAsync(Product product)
     {
-        throw new NotImplementedException();
+        await _productRepository.UpdateAsync(product);
     }
 }

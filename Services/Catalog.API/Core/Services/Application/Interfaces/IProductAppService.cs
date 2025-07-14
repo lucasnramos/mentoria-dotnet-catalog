@@ -6,7 +6,7 @@ namespace Catalog.API.Core.Services.Application.Interfaces;
 public interface IProductAppService
 {
     Task<Product> GetProductByIdAsync(Guid id);
-    Task AddProductAsync(Product product);
+    Task InsertProductAsync(Product product);
     Task UpdateProductAsync(Product product);
     Task DeleteProductAsync(Guid id);
 }

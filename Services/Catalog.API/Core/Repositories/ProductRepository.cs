@@ -29,6 +29,10 @@ public class ProductRepository : IProductRepository
     public async Task<Product> GetByIdAsync(Guid id)
     {
         var serialized = await _cache.GetStringAsync(id.ToString());
+        if (string.IsNullOrEmpty(serialized))
+        {
+            return null;
+        }
         var product = JsonSerializer.Deserialize<Product>(serialized);
         return product;
     }

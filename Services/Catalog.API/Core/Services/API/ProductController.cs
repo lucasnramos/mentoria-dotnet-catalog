@@ -1,4 +1,5 @@
 using Catalog.API.Core.Domain.Entities;
+using Catalog.API.Core.Services.Application.AppProduct;
 using Catalog.API.Core.Services.Application.Interfaces;
 using Marraia.Notifications.Base;
 using Marraia.Notifications.Models;
@@ -12,34 +13,43 @@ namespace Catalog.API.Core.Services.API
     public class ProductController : BaseController
     {
         private readonly IProductAppService _productAppService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _configuration;
 
         public ProductController(IProductAppService productAppService,
-                                INotificationHandler<DomainNotification> notification,
-                                IHttpContextAccessor httpContextAccessor,
-                                IConfiguration configuration)
+                                INotificationHandler<DomainNotification> notification)
             : base(notification)
         {
 
             _productAppService = productAppService ?? throw new ArgumentNullException(nameof(productAppService));
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetProductById(Guid id)
+        public async Task<IActionResult> GetProductByIdAsync(Guid id)
         {
             var product = await _productAppService.GetProductByIdAsync(id);
             return OkOrNotFound(product);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddProduct([FromBody] Product product)
+        public async Task<IActionResult> InsertProductAsync([FromBody] ProductInput productInput)
         {
-            // Validate with ProductInput
-            await _productAppService.AddProductAsync(product);
+            var product = new Product(productInput.Title, productInput.Price, productInput.ThumbnailUrl);
+            await _productAppService.InsertProductAsync(product);
             return CreatedContent($"api/product/{product.Id}", product);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateProductAsync([FromBody] ProductInput productInput)
+        {
+            var product = new Product(productInput.Title, productInput.Price, productInput.ThumbnailUrl);
+            await _productAppService.UpdateProductAsync(product);
+            return AcceptedOrContent(product);
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteProductAsync([FromQuery] Guid id)
+        {
+            await _productAppService.DeleteProductAsync(id);
+            return NoContent();
         }
     }
 }
