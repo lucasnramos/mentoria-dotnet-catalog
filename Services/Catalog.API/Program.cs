@@ -1,3 +1,7 @@
+using Catalog.API.Core.Repositories;
+using Catalog.API.Core.Repositories.Interfaces;
+using Catalog.API.Core.Services.Application;
+using Catalog.API.Core.Services.Application.Interfaces;
 using Microsoft.Extensions.Options;
 using Marraia.Notifications.Configurations;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
@@ -14,6 +18,10 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = builder.Configuration.GetSection("Redis:InstanceName").Value;
     options.Configuration = builder.Configuration.GetSection("Redis:Configuration").Value;
 });
+
+builder.Services.AddScoped<IProductAppService, ProductAppService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddCors(options =>
 {
