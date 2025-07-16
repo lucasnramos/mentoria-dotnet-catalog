@@ -6,6 +6,8 @@ using Microsoft.Extensions.Options;
 using Marraia.Notifications.Configurations;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using StackExchange.Redis;
+using Authentication.Adapter.Configurations;
+using Authentication.Adapter.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,15 @@ builder.Services.AddCors(options =>
                     .AllowAnyMethod()
                     .AllowAnyHeader());
 });
+
+#region JWT
+// Token and JWT service with Authentication Adapter
+var tokenConfigurations = new TokenConfigurations();
+new ConfigureFromConfigurationOptions<TokenConfigurations>(builder.Configuration.GetSection("TokenConfigurations"))
+        .Configure(tokenConfigurations);
+
+builder.Services.AddJwtSecurity(tokenConfigurations);
+#endregion
 
 builder.Services.AddSmartNotification();
 

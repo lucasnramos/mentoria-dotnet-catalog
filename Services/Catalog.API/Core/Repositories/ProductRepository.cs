@@ -56,17 +56,16 @@ public class ProductRepository : IProductRepository
 
     public async Task<IEnumerable<Product>> GetAllAsync()
     {
-        var db = _redis.GetDatabase();
         var server = _redis.GetServer(_redis.GetEndPoints().First());
         var keys = server.Keys(pattern: "*").ToArray();
 
         var products = new List<Product>();
         foreach (var key in keys)
         {
-            var value = await db.StringGetAsync(key);
-            if (!value.IsNull)
+            var serialized = await _cache.GetStringAsync(key.ToString());
+            if (!string.IsNullOrEmpty(serialized))
             {
-                var product = JsonSerializer.Deserialize<Product>(value.ToString());
+                var product = JsonSerializer.Deserialize<Product>(serialized);
                 if (product != null)
                 {
                     products.Add(product);

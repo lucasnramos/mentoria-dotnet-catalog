@@ -3,7 +3,9 @@ using Catalog.API.Core.Services.Application.Interfaces;
 using Marraia.Notifications.Base;
 using Marraia.Notifications.Models;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 
 namespace Catalog.API.Core.Services.API
 {
@@ -21,12 +23,12 @@ namespace Catalog.API.Core.Services.API
             _productAppService = productAppService ?? throw new ArgumentNullException(nameof(productAppService));
         }
 
-        // [HttpGet]
-        // public async Task<IActionResult> GetAllAsync()
-        // {
-        //     var product = await _productAppService.GetAllAsync();
-        //     return OkOrNotFound(product);
-        // }
+        [HttpGet]
+        public async Task<IActionResult> GetAllAsync()
+        {
+            var product = await _productAppService.GetAllAsync();
+            return OkOrNotFound(product);
+        }
 
         [HttpGet]
         [Route("{id}")]
@@ -36,6 +38,7 @@ namespace Catalog.API.Core.Services.API
             return OkOrNotFound(product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> InsertAsync([FromBody] ProductInput productInput)
         {
@@ -43,6 +46,7 @@ namespace Catalog.API.Core.Services.API
             return CreatedContent($"api/product/{product.Id}", product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         [Route("{id}")]
         public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] ProductInput productInput)
@@ -51,6 +55,7 @@ namespace Catalog.API.Core.Services.API
             return AcceptedOrContent(updatedProduct);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] Guid id)
