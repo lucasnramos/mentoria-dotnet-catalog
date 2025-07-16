@@ -47,9 +47,8 @@ namespace Catalog.API.Core.Services.API
         [Route("{id}")]
         public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] ProductInput productInput)
         {
-            // Return product from application method for the HTTP response
-            await _productAppService.UpdateAsync(id, productInput);
-            return AcceptedOrContent();
+            var updatedProduct = await _productAppService.UpdateAsync(id, productInput);
+            return AcceptedOrContent(updatedProduct);
         }
 
         [HttpDelete]

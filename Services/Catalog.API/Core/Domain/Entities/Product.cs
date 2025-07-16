@@ -33,4 +33,11 @@ public class Product
 
         return fieldValidation;
     }
+
+    public void Update(string title, decimal price, string thumbnailUrl)
+    {
+        Title = title;
+        Price = price;
+        ThumbnailUrl = thumbnailUrl;
+    }
 }

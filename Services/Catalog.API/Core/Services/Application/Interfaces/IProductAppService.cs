@@ -9,6 +9,6 @@ public interface IProductAppService
     Task<IEnumerable<Product>> GetAllAsync();
     Task<Product> GetByIdAsync(Guid id);
     Task<Product> InsertAsync(ProductInput productInput);
-    Task UpdateAsync(Guid id, ProductInput productInput);
+    Task<Product> UpdateAsync(Guid id, ProductInput productInput);
     Task DeleteAsync(Guid id);
 }

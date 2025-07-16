@@ -58,22 +58,29 @@ public class ProductAppService : EntityValidator, IProductAppService
         return product;
     }
 
-    public async Task UpdateAsync(Guid id, ProductInput productInput)
+    public async Task<Product> UpdateAsync(Guid id, ProductInput productInput)
     {
         if (id == Guid.Empty)
         {
             _notification.NewNotificationBadRequest("Id is required.");
-            return;
+            return null;
         }
 
         var existingProduct = await _productRepository.GetByIdAsync(id);
 
         if (existingProduct == null)
         {
-            return;
+            return null;
         }
 
-        var product = new Product(productInput.Title, productInput.Price, productInput.ThumbnailUrl);
-        await _productRepository.UpdateAsync(product);
+        existingProduct.Update(productInput.Title, productInput.Price, productInput.ThumbnailUrl);
+        var validationFields = existingProduct.Validate();
+        if (!validationFields.IsValid)
+        {
+            NotifyValidationErrors(validationFields);
+            return null;
+        }
+        await _productRepository.UpdateAsync(existingProduct);
+        return existingProduct;
     }
 }
