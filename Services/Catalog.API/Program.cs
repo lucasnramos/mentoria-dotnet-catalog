@@ -5,6 +5,7 @@ using Catalog.API.Core.Services.Application.Interfaces;
 using Microsoft.Extensions.Options;
 using Marraia.Notifications.Configurations;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
+var redisConnection = builder.Configuration.GetSection("Redis:Configuration").Value
+    ?? throw new InvalidOperationException("Redis configuration is not set");
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnection));
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.InstanceName = builder.Configuration.GetSection("Redis:InstanceName").Value;

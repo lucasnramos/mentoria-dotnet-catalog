@@ -1,12 +1,14 @@
 using System;
 using Catalog.API.Core.Domain.Entities;
+using Catalog.API.Core.Services.Application.AppProduct;
 
 namespace Catalog.API.Core.Services.Application.Interfaces;
 
 public interface IProductAppService
 {
-    Task<Product> GetProductByIdAsync(Guid id);
-    Task InsertProductAsync(Product product);
-    Task UpdateProductAsync(Product product);
-    Task DeleteProductAsync(Guid id);
+    Task<IEnumerable<Product>> GetAllAsync();
+    Task<Product> GetByIdAsync(Guid id);
+    Task<Product> InsertAsync(ProductInput productInput);
+    Task UpdateAsync(Guid id, ProductInput productInput);
+    Task DeleteAsync(Guid id);
 }

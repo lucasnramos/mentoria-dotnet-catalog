@@ -3,16 +3,21 @@ using System.Text.Json;
 using Catalog.API.Core.Domain.Entities;
 using Catalog.API.Core.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Catalog.API.Core.Repositories;
 
 public class ProductRepository : IProductRepository
 {
     private readonly IDistributedCache _cache;
+    private readonly IConnectionMultiplexer _redis;
 
-    public ProductRepository(IDistributedCache cache)
+    public ProductRepository(IDistributedCache cache, IConnectionMultiplexer redis)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        _redis = redis ?? throw new ArgumentNullException(nameof(redis));
     }
 
     public async Task AddAsync(Product product)
@@ -26,21 +31,50 @@ public class ProductRepository : IProductRepository
         await _cache.RemoveAsync(id.ToString());
     }
 
-    public async Task<Product> GetByIdAsync(Guid id)
+    public async Task<Product?> GetByIdAsync(Guid id)
     {
         var serialized = await _cache.GetStringAsync(id.ToString());
         if (string.IsNullOrEmpty(serialized))
         {
             return null;
         }
+
         var product = JsonSerializer.Deserialize<Product>(serialized);
-        return product;
+
+        if (product == null)
+        {
+            return null;
+        }
+        return product!;
     }
 
     public async Task UpdateAsync(Product product)
     {
         var serialized = JsonSerializer.Serialize(product);
         await _cache.SetStringAsync(product.Id.ToString(), serialized);
+    }
+
+    public async Task<IEnumerable<Product>> GetAllAsync()
+    {
+        var db = _redis.GetDatabase();
+        var server = _redis.GetServer(_redis.GetEndPoints().First());
+        var keys = server.Keys(pattern: "*").ToArray();
+
+        var products = new List<Product>();
+        foreach (var key in keys)
+        {
+            var value = await db.StringGetAsync(key);
+            if (!value.IsNull)
+            {
+                var product = JsonSerializer.Deserialize<Product>(value.ToString());
+                if (product != null)
+                {
+                    products.Add(product);
+                }
+            }
+        }
+
+        return products;
     }
 }
 

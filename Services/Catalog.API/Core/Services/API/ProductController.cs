@@ -1,4 +1,3 @@
-using Catalog.API.Core.Domain.Entities;
 using Catalog.API.Core.Services.Application.AppProduct;
 using Catalog.API.Core.Services.Application.Interfaces;
 using Marraia.Notifications.Base;
@@ -22,33 +21,42 @@ namespace Catalog.API.Core.Services.API
             _productAppService = productAppService ?? throw new ArgumentNullException(nameof(productAppService));
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProductByIdAsync(Guid id)
+        // [HttpGet]
+        // public async Task<IActionResult> GetAllAsync()
+        // {
+        //     var product = await _productAppService.GetAllAsync();
+        //     return OkOrNotFound(product);
+        // }
+
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<IActionResult> GetByIdAsync([FromRoute] Guid id)
         {
-            var product = await _productAppService.GetProductByIdAsync(id);
+            var product = await _productAppService.GetByIdAsync(id);
             return OkOrNotFound(product);
         }
 
         [HttpPost]
-        public async Task<IActionResult> InsertProductAsync([FromBody] ProductInput productInput)
+        public async Task<IActionResult> InsertAsync([FromBody] ProductInput productInput)
         {
-            var product = new Product(productInput.Title, productInput.Price, productInput.ThumbnailUrl);
-            await _productAppService.InsertProductAsync(product);
+            var product = await _productAppService.InsertAsync(productInput);
             return CreatedContent($"api/product/{product.Id}", product);
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateProductAsync([FromBody] ProductInput productInput)
+        [Route("{id}")]
+        public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] ProductInput productInput)
         {
-            var product = new Product(productInput.Title, productInput.Price, productInput.ThumbnailUrl);
-            await _productAppService.UpdateProductAsync(product);
-            return AcceptedOrContent(product);
+            // Return product from application method for the HTTP response
+            await _productAppService.UpdateAsync(id, productInput);
+            return AcceptedOrContent();
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteProductAsync([FromQuery] Guid id)
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid id)
         {
-            await _productAppService.DeleteProductAsync(id);
+            await _productAppService.DeleteAsync(id);
             return NoContent();
         }
     }
