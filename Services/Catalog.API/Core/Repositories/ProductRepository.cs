@@ -62,7 +62,8 @@ public class ProductRepository : IProductRepository
         var products = new List<Product>();
         foreach (var key in keys)
         {
-            var serialized = await _cache.GetStringAsync(key.ToString());
+            var id = key.ToString().Split("CatalogAPI")[1];
+            var serialized = await _cache.GetStringAsync(id);
             if (!string.IsNullOrEmpty(serialized))
             {
                 var product = JsonSerializer.Deserialize<Product>(serialized);
